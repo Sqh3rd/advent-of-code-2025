@@ -23,28 +23,33 @@ public class RangeUtils {
     public static List<IDRange> getSubrangesWithNMultipleDigits(IDRange range, int n) {
         if (n == 0)
             throw new IllegalArgumentException("n has to be greater than 0");
-        int min = (int) Math.log10(Math.max(1, range.min()));
-        int max = (int) Math.log10(range.max());
-
-        if (min == max)
-            return (1 + min) % n == 0 ? List.of(new IDRange(range.min(), range.max(), min)) : Collections.emptyList();
-
-        int possibleRanges = Math.max(1, (max - min) / n);
-        var subRanges = new ArrayList<IDRange>(possibleRanges);
-
-        int offset = (n - 1 + min) % n;
-        for (int i = 0; i < possibleRanges; i++) {
-            int currentOrder = min + offset + i * n;
-            long currentMin = Math.max(range.min(), (long) Math.pow(10, currentOrder));
-            long currentMax = Math.min(range.max(), (long) Math.pow(10, currentOrder + 1) - 1);
-            subRanges.add(new IDRange(currentMin, currentMax, currentOrder));
-        }
-
-        return subRanges;
+        return getSubrangesWithOrder(range).stream()
+                .filter(it -> (it.order() + 1) % n == 0)
+                .toList();
     }
 
     public static List<IDRange> getSubRangesOfEvenDigits(IDRange range) {
         return RangeUtils.getSubrangesWithNMultipleDigits(range, 2);
+    }
+
+    public static List<Long> getAllRepeatingPatterns(IDRange range) {
+        if (range.order() == 0)
+            return Collections.emptyList();
+        var max = range.order() + 1;
+        var factors = new ArrayList<Integer>();
+        factors.add(max);
+        for (int i = 2; i <= max / 2; i++) {
+            if (max % i == 0) {
+                factors.add(i);
+                factors.add(max / i);
+            }
+        }
+        return factors.stream()
+                .distinct()
+                .map(n -> RangeUtils.getNRepeatingPatterns(range, n))
+                .flatMap(Collection::stream)
+                .distinct()
+                .toList();
     }
 
     /**
@@ -67,26 +72,6 @@ public class RangeUtils {
         return getNRepeatingPatterns(range, n).stream()
                 .reduce(Long::sum)
                 .orElseThrow();
-    }
-
-    public static List<Long> getAllRepeatingPatterns(IDRange range) {
-        if (range.order() == 0)
-            return Collections.emptyList();
-        var max = range.order() + 1;
-        var factors = new ArrayList<Integer>();
-        factors.add(max);
-        for (int i = 2; i <= max / 2; i++) {
-            if (max % i == 0) {
-                factors.add(i);
-                factors.add(max / i);
-            }
-        }
-        return factors.stream()
-                .distinct()
-                .map(n -> RangeUtils.getNRepeatingPatterns(range, n))
-                .flatMap(Collection::stream)
-                .distinct()
-                .toList();
     }
 
     public static List<Long> getNRepeatingPatterns(IDRange range, int n) {
