@@ -16,7 +16,7 @@ dependencies {
     testImplementation("org.assertj:assertj-core:3.27.6")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher")
     implementation("io.freefair.lombok:io.freefair.lombok.gradle.plugin:9.1.0")
-    implementation("com.sqherd:input-parser")
+    implementation(project(":input-parser"))
 }
 
 tasks.test {
