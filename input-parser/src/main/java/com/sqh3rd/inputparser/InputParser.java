@@ -30,4 +30,10 @@ public class InputParser {
                 .map(inputSerializer)
                 .toList();
     }
+
+    @SneakyThrows
+    static public <T> T serializeInput(Function<String, T> inputSerializer, Class<?> clazz) {
+        var inputPath = Path.of(clazz.getResource("/input.txt").toURI());
+        return inputSerializer.apply(Files.readString(inputPath));
+    }
 }
